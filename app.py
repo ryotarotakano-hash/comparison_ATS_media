@@ -7,19 +7,13 @@ from datetime import datetime
 from groq import Groq
 
 # ==========================================
-# 🔑 設定・APIキー管理（最重要・修正版）
+# 🔑 設定・APIキー管理
 # ==========================================
-# GitHubに上げるため、ここに直接キーを書くのは禁止です。
-# Streamlit Cloudの「Secrets」機能からキーを読み込みます。
-
 try:
-    # クラウド環境(Streamlit Cloud)の鍵を取得
     GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 except FileNotFoundError:
-    # 鍵が見つからない場合のエラー表示
     st.error("🚫 APIキーが見つかりません！")
-    st.warning("Streamlit Cloudの 'Settings' > 'Secrets' に 'GROQ_API_KEY' を設定してください。")
-    st.stop() # ここで処理を強制停止
+    st.stop()
 
 client = Groq(api_key=GROQ_API_KEY)
 DB_FILE = 'recruitment_db.csv'
@@ -38,14 +32,13 @@ COLUMNS = [
     "サポート体制", "導入企業規模"
 ]
 
-# 文言定義（プルダウン用）
 CATEGORY_OPTIONS = ["求人媒体", "スカウト媒体", "ATS", "その他"]
 
 # ==========================================
-# 🧠 AIエンジニアリング部分 (Llama 3.3)
+# 🧠 AIエンジニアリング部分 (精度向上版)
 # ==========================================
 def research_with_groq(company_name, category_label):
-    # プロンプトの作成
+    # ★ここが変更点：指示をめちゃくちゃ具体的にしました
     prompt = f"""
     あなたは日本の採用市場に精通したトップコンサルタントです。
     以下のサービスについて情報を検索し、JSON形式で回答してください。
@@ -56,26 +49,36 @@ def research_with_groq(company_name, category_label):
     出力JSONキー:
     {", ".join(COLUMNS)}
 
-    ルール:
-    - "媒体カテゴリ" は "{category_label}" を優先しつつ、実態に合わせて記述（例: スカウト型、求人広告型）。
-    - 数値は目安でOK。不明な場合は「要問い合わせ」。
-    - 必ず有効なJSONのみを出力すること。
+    【重要：データ抽出の絶対ルール】
+    1. **ターゲット年収帯**:
+       - ⚠️ 必ず「年収」で回答すること。「月収」は不可。
+       - もし情報源が月給表記（例: 30万円）の場合は、×12〜14ヶ月分として年収換算すること（例: "360〜450万円"）。
+       - 単位は「万円」で統一すること。
+    
+    2. **課金形態・費用**:
+       - 具体的な金額が不明な場合は「要問い合わせ」とする。
+       - 嘘の金額は書かないこと。
+
+    3. **媒体カテゴリ**:
+       - "{category_label}" という分類を尊重しつつ、具体的な種別（ダイレクトリクルーティング、掲載課金型など）を書くこと。
+
+    4. **出力形式**:
+       - 必ず有効なJSON形式のみを出力すること。余計な解説文は不要。
     """
 
     try:
         completion = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": "JSON形式で出力するアシスタントです。"},
+                {"role": "system", "content": "JSON形式で出力する厳格なアシスタントです。"},
                 {"role": "user", "content": prompt}
             ],
-            # 最新モデルを指定
             model="llama-3.3-70b-versatile",
             response_format={"type": "json_object"},
+            temperature=0.3, # ★創造性を少し下げて、事実重視の設定にしました
         )
         response_content = completion.choices[0].message.content
         data = json.loads(response_content)
         
-        # データの整形
         safe_data = {col: data.get(col, "-") for col in COLUMNS}
         safe_data["会社名"] = company_name
         safe_data["カテゴリ(入力)"] = category_label
@@ -93,7 +96,6 @@ def main():
     st.title("🚀 AI採用媒体・ATS比較ダッシュボード")
     st.markdown("powered by Groq (Llama 3.3)")
 
-    # データベースの読み込み
     if os.path.exists(DB_FILE):
         df = pd.read_csv(DB_FILE)
     else:
@@ -101,12 +103,10 @@ def main():
 
     tab1, tab2 = st.tabs(["📝 フロー1：一括登録・リサーチ", "📊 フロー2：比較表出力"])
 
-    # --- フロー1：一括登録 ---
     with tab1:
         st.header("1. 比較したいサービスを入力")
-        st.markdown("以下の表に、調査したい**会社名**と**カテゴリ**を入力してください。（行を追加できます）")
+        st.markdown("以下の表に、調査したい**会社名**と**カテゴリ**を入力してください。")
 
-        # 入力用の一時的なデータフレーム
         input_df = pd.DataFrame([
             {"会社名": "Green", "カテゴリ": "スカウト媒体"},
             {"会社名": "Indeed", "カテゴリ": "求人媒体"},
@@ -141,7 +141,7 @@ def main():
                     if company in df["会社名"].values:
                         status_text.info(f"⏭️ {company} は既に登録済みです。スキップします。")
                     else:
-                        status_text.info(f"🤖 AIが『{company}』を調査中...")
+                        status_text.info(f"🤖 AIが『{company}』を詳細分析中...")
                         result = research_with_groq(company, category)
                         new_rows.append(result)
                         time.sleep(0.5) 
@@ -152,16 +152,14 @@ def main():
                 new_df = pd.DataFrame(new_rows)
                 df = pd.concat([df, new_df], ignore_index=True)
                 df.to_csv(DB_FILE, index=False)
-                st.success(f"✅ {len(new_rows)}件の新規リサーチが完了しました！")
+                st.success(f"✅ {len(new_rows)}件の分析が完了しました！（年収精度向上版）")
                 st.dataframe(new_rows)
             else:
                 st.info("新規に追加されたデータはありませんでした。")
 
         st.divider()
         
-        # データ管理エリア
         st.subheader("📚 現在蓄積されているデータベース")
-        
         col_reset, col_dummy = st.columns([1, 3])
         with col_reset:
             is_reset = st.checkbox("⚠️ データを全消去する")
@@ -173,10 +171,8 @@ def main():
         
         st.dataframe(df)
 
-    # --- フロー2：比較出力 ---
     with tab2:
         st.header("📊 比較表の生成")
-        
         category_filter = st.selectbox("表示するカテゴリ", ["全て"] + CATEGORY_OPTIONS)
         
         if category_filter == "全て":
