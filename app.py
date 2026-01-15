@@ -20,6 +20,14 @@ client = Groq(api_key=GROQ_API_KEY)
 DB_FILE = 'recruitment_db.csv'
 
 # ==========================================
+# 🚀 設定：使用モデルの選択
+# ==========================================
+# 爆速・軽量モデル（制限にかかりにくい）
+MODEL_NAME = "llama-3.1-8b-instant" 
+# 高精度モデル（制限にかかりやすい。精度重視のときはこっちを使う）
+# MODEL_NAME = "llama-3.3-70b-versatile" 
+
+# ==========================================
 # 📋 カテゴリ定義
 # ==========================================
 CATEGORY_HIERARCHY = {
@@ -64,7 +72,6 @@ DEFAULT_TARGETS = [
     {"company": "外資就活ドットコム", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "チアキャリア", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "JobSpring", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
-
     # --- 求人媒体：中途 ---
     {"company": "Indeed", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
     {"company": "リクナビNEXT", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
@@ -86,7 +93,6 @@ DEFAULT_TARGETS = [
     {"company": "Wantedly", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
     {"company": "JobQ転職", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
     {"company": "Googleしごと検索", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
-
     # --- 求人媒体：アルバイト ---
     {"company": "タウンワーク", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
     {"company": "バイトル", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
@@ -97,7 +103,6 @@ DEFAULT_TARGETS = [
     {"company": "LINEバイト", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
     {"company": "ギガバイト", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
     {"company": "an", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
-
     # --- 求人媒体：インターン ---
     {"company": "Wantedly", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
     {"company": "マイナビインターンシップ", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
@@ -110,7 +115,6 @@ DEFAULT_TARGETS = [
     {"company": "LabBaseインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
     {"company": "Chegg Internships", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
     {"company": "Intern Street", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
-
     # --- 求人媒体：業務委託 ---
     {"company": "CrowdWorks", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
     {"company": "Lancers", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
@@ -127,7 +131,6 @@ DEFAULT_TARGETS = [
     {"company": "Saleshub", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
     {"company": "複業クラウド", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
     {"company": "ProSharing", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
-
     # --- スカウト：新卒 ---
     {"company": "OfferBox", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
     {"company": "LabBase", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
@@ -139,7 +142,6 @@ DEFAULT_TARGETS = [
     {"company": "dodaキャンパス", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
     {"company": "iroots", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
     {"company": "Re就活スカウト", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
-
     # --- スカウト：中途 ---
     {"company": "ビズリーチ", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
     {"company": "リクルートダイレクトスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
@@ -158,7 +160,6 @@ DEFAULT_TARGETS = [
     {"company": "Forkwell Jobs", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
     {"company": "LAPRAS", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
     {"company": "Paiza転職", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
-
     # --- スカウト：業務委託 ---
     {"company": "SOKUDAN", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
     {"company": "Offers", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
@@ -169,7 +170,6 @@ DEFAULT_TARGETS = [
     {"company": "Saleshub", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
     {"company": "複業クラウド", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
     {"company": "ProSharing", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
-
     # --- ATS：国産 ---
     {"company": "HRMOS採用", "major": "ATS", "sub": "ATS（国産）"},
     {"company": "HERP Hire", "major": "ATS", "sub": "ATS（国産）"},
@@ -186,7 +186,6 @@ DEFAULT_TARGETS = [
     {"company": "WORKL", "major": "ATS", "sub": "ATS（国産）"},
     {"company": "TORoo", "major": "ATS", "sub": "ATS（国産）"},
     {"company": "RecoRu", "major": "ATS", "sub": "ATS（国産）"},
-
     # --- ATS：外資 ---
     {"company": "Greenhouse", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
     {"company": "Lever", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
@@ -198,7 +197,6 @@ DEFAULT_TARGETS = [
     {"company": "BambooHR", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
     {"company": "JazzHR", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
     {"company": "Bullhorn", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
-
     # --- その他 ---
     {"company": "LinkedIn", "major": "その他", "sub": "SNS・その他"},
     {"company": "X（旧Twitter）", "major": "その他", "sub": "SNS・その他"},
@@ -227,7 +225,7 @@ COLUMNS = [
 ]
 
 # ==========================================
-# 🧠 AIエンジニアリング部分
+# 🧠 AIエンジニアリング部分（爆速対応）
 # ==========================================
 def research_with_groq(company_name, major_category, sub_category):
     prompt = f"""
@@ -254,9 +252,9 @@ def research_with_groq(company_name, major_category, sub_category):
        - 必ず有効なJSON形式のみを出力すること。
     """
 
-    # リトライ設定
+    # リトライ回数は減らし、攻撃的に進める
     max_retries = 3
-    base_delay = 2 # 秒
+    base_delay = 1 # 秒
 
     for attempt in range(max_retries):
         try:
@@ -265,7 +263,7 @@ def research_with_groq(company_name, major_category, sub_category):
                     {"role": "system", "content": "JSON形式で出力する厳格なアシスタントです。"},
                     {"role": "user", "content": prompt}
                 ],
-                model="llama-3.3-70b-versatile",
+                model=MODEL_NAME, # ここで8bモデルを指定
                 response_format={"type": "json_object"},
                 temperature=0.3,
             )
@@ -280,10 +278,10 @@ def research_with_groq(company_name, major_category, sub_category):
             return safe_data
 
         except RateLimitError as e:
-            wait_time = 60 + random.randint(5, 15)
+            # 8bモデルなら制限は緩いが、もし引っかかったら5秒だけ待って再トライ
+            wait_time = 5 
             if attempt < max_retries - 1:
-                # ログには出すが、画面にはトーストで控えめに通知
-                st.toast(f"⏳ 混雑中... {company_name} は {wait_time}秒後に再開します。", icon="💤")
+                st.toast(f"⏳ 少し混雑中... {wait_time}秒後に再開します。", icon="⚠️")
                 time.sleep(wait_time)
                 continue
             else:
@@ -312,7 +310,7 @@ def create_error_row(company, major, sub, error_msg):
 def main():
     st.set_page_config(page_title="AI Recruitment Researcher", layout="wide")
     st.title("🚀 AI採用媒体・ATS比較ダッシュボード")
-    st.markdown("powered by Groq (Llama 3.3) - **ファイナル・完全版**")
+    st.markdown(f"powered by Groq ({MODEL_NAME}) - **爆速モード**")
 
     # DB読み込み
     if os.path.exists(DB_FILE):
@@ -394,9 +392,7 @@ def main():
             
             if st.button("🚀 リストのAIリサーチを一括実行", type="primary"):
                 progress_bar = st.progress(0)
-                
-                # ★重要：statusコンテナを使って進捗をリアルタイム表示
-                status_container = st.status("AIがリサーチを実行中...", expanded=True)
+                status_container = st.status("🚀 爆速リサーチ中...", expanded=True)
                 
                 new_rows = []
                 total_items = len(queue_df)
@@ -406,13 +402,11 @@ def main():
                     major = row["大項目"]
                     sub = row["中項目"]
 
-                    status_container.write(f"🔍 ({i+1}/{total_items}) 『{company}』を調査中... ({sub})")
+                    status_container.write(f"⚡ ({i+1}/{total_items}) 『{company}』を調査中... ({sub})")
                     
-                    # リサーチ
                     result = research_with_groq(company, major, sub)
                     
-                    # ★重要：1件ごとに即時保存（オートセーブ）
-                    # これで途中で止まってもデータは残る
+                    # オートセーブ
                     new_row_df = pd.DataFrame([result])
                     if os.path.exists(DB_FILE):
                         current_df = pd.read_csv(DB_FILE)
@@ -425,8 +419,8 @@ def main():
                     
                     progress_bar.progress((i + 1) / total_items)
                     
-                    # 待機時間（1.5秒に短縮）
-                    time.sleep(1.5) 
+                    # 待機時間を極限まで削る（0.5秒）
+                    time.sleep(0.5) 
 
                 status_container.update(label="✅ 全リサーチ完了！", state="complete", expanded=False)
                 st.success("完了しました！画面を更新します。")
