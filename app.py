@@ -19,11 +19,11 @@ client = Groq(api_key=GROQ_API_KEY)
 DB_FILE = 'recruitment_db.csv'
 
 # ==========================================
-# 📋 項目定義（★メリット・デメリットを追加）
+# 📋 項目定義
 # ==========================================
 COLUMNS = [
     "会社名", "カテゴリ(入力)", 
-    "導入メリット", "導入デメリット", # ★ここに追加しました！
+    "導入メリット", "導入デメリット", 
     "媒体カテゴリ", "主な利用目的", "向いている採用フェーズ", 
     "ターゲット職種", "ターゲット年収帯", "経験レベル", "雇用形態対応",
     "課金形態", "初期費用", "最低契約期間", "想定採用単価", "予算コントロール",
@@ -40,7 +40,7 @@ CATEGORY_OPTIONS = ["求人媒体", "スカウト媒体", "ATS", "その他"]
 # 🧠 AIエンジニアリング部分
 # ==========================================
 def research_with_groq(company_name, category_label):
-    # プロンプトも強化して、メリット・デメリットをしっかり書かせます
+    # ★ここを修正：括弧を禁止し、シンプルな箇条書きを強制します
     prompt = f"""
     あなたは日本の採用市場に精通したトップコンサルタントです。
     以下のサービスについて情報を検索し、JSON形式で回答してください。
@@ -53,9 +53,14 @@ def research_with_groq(company_name, category_label):
 
     【重要：データ抽出ルール】
     1. **導入メリット / 導入デメリット**:
-       - それぞれ「3点ほど」箇条書きや短文で要約して記載すること。
-       - 企業視点でのメリット（例: エンジニア採用に強い、コストが安い）を書くこと。
-       - デメリットはリスクや手間（例: スカウト工数がかかる、認知度が低い）を書くこと。
+       - 採用担当者視点で、それぞれ3点ほど簡潔に挙げること。
+       - **禁止事項**: 文頭や文末に「」『』() [] などの括弧記号は一切つけないこと。
+       - **形式**: 各項目の頭に「・」をつけ、改行で区切ること。
+       （良い例: 
+         ・エンジニア採用に強い
+         ・初期費用が無料
+         ・運用の手間が少ない）
+       （悪い例: 「エンジニア採用に強い」、「初期費用が無料」）
 
     2. **ターゲット年収帯**:
        - ⚠️ 必ず「年収」表記にすること（月収×12〜14で換算）。単位は「万円」。
@@ -97,13 +102,10 @@ def main():
 
     if os.path.exists(DB_FILE):
         df = pd.read_csv(DB_FILE)
-        
-        # ★既存データとの互換性チェック
-        # カラムが増えたので、古いCSVを読み込むとエラーになるのを防ぐ処理
+        # 既存データとの互換性チェック
         for col in COLUMNS:
             if col not in df.columns:
-                df[col] = "-" # 新しい列がなければ空で追加
-                
+                df[col] = "-"
     else:
         df = pd.DataFrame(columns=COLUMNS)
 
@@ -147,7 +149,7 @@ def main():
                     if company in df["会社名"].values:
                         status_text.info(f"⏭️ {company} は既に登録済みです。スキップします。")
                     else:
-                        status_text.info(f"🤖 AIが『{company}』のメリット・デメリットを含めて調査中...")
+                        status_text.info(f"🤖 AIが『{company}』を調査中...")
                         result = research_with_groq(company, category)
                         new_rows.append(result)
                         time.sleep(0.5) 
@@ -158,7 +160,7 @@ def main():
                 new_df = pd.DataFrame(new_rows)
                 df = pd.concat([df, new_df], ignore_index=True)
                 df.to_csv(DB_FILE, index=False)
-                st.success(f"✅ {len(new_rows)}件の分析完了！メリット・デメリットも追加されました。")
+                st.success(f"✅ {len(new_rows)}件の分析完了！表示形式を修正しました。")
                 st.dataframe(new_rows)
             else:
                 st.info("新規に追加されたデータはありませんでした。")
