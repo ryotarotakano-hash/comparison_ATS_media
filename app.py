@@ -45,10 +45,8 @@ CATEGORY_HIERARCHY = {
 }
 
 # ==========================================
-# 📚 デフォルト・マスターデータ（抜粋）
+# 📚 デフォルト・マスターデータ（完全版）
 # ==========================================
-# ※コードの長さを抑えるためリストは維持しますが、
-# 実際の運用では前回のリストと同じものを使用します。
 DEFAULT_TARGETS = [
     # --- 求人媒体：新卒 ---
     {"company": "マイナビ2027", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
@@ -56,6 +54,7 @@ DEFAULT_TARGETS = [
     {"company": "キャリタス就活", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "ONE CAREER", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "OfferBox", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "ジョブコミット", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "Future Finder", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "LabBase", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "TECH OFFER", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
@@ -65,6 +64,7 @@ DEFAULT_TARGETS = [
     {"company": "外資就活ドットコム", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "チアキャリア", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
     {"company": "JobSpring", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+
     # --- 求人媒体：中途 ---
     {"company": "Indeed", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
     {"company": "リクナビNEXT", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
@@ -73,16 +73,142 @@ DEFAULT_TARGETS = [
     {"company": "エン転職", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
     {"company": "type", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
     {"company": "女の転職type", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
-    {"company": "Green", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "はたらいく", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "FromA NAVI", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "イーキャリア", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "CareerCross", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "Daijob", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "OpenWork求人", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "ミドルの転職", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "エン ミドルハイクラス", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "AMBI", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "Liiga", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
     {"company": "Wantedly", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "JobQ転職", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
     {"company": "Googleしごと検索", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
-    {"company": "ビズリーチ", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
-    {"company": "HRMOS採用", "major": "ATS", "sub": "ATS（国産）"},
-    # ... (前回のリスト全量を含める想定ですが、動作確認のため主要なものを記載)
-]
-# ※運用時は前回の DEFAULT_TARGETS をそのまま貼り付けてください。
-# ここではスペース節約のため省略していませんが、前回のコードのリストをそのまま使ってください。
 
+    # --- 求人媒体：アルバイト ---
+    {"company": "タウンワーク", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "バイトル", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "マイナビバイト", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "Indeed", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "ショットワークス", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "フロムエー", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "LINEバイト", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "ギガバイト", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "an", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+
+    # --- 求人媒体：インターン ---
+    {"company": "Wantedly", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "マイナビインターンシップ", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "リクナビインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "Infra", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "ゼロワンインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "キャリアバイト", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "エンジニアインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "Paizaインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "LabBaseインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "Chegg Internships", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "Intern Street", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+
+    # --- 求人媒体：業務委託 ---
+    {"company": "CrowdWorks", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Lancers", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Workship", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Midworks", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "ITプロパートナーズ", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "レバテックフリーランス", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "ココナラ", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "SOKUDAN", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "フリーランススタート", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Anycrew", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Offers", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "HiPro Direct", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Saleshub", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "複業クラウド", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "ProSharing", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+
+    # --- スカウト：新卒 ---
+    {"company": "OfferBox", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "LabBase", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "TECH OFFER", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "Paiza新卒スカウト", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "Future Finder", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "キャリアチケットスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "キミスカ", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "dodaキャンパス", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "iroots", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "Re就活スカウト", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+
+    # --- スカウト：中途 ---
+    {"company": "ビズリーチ", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "リクルートダイレクトスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "dodaダイレクト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "AMBI", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "ミドルの転職", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "OpenWorkスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Green", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Wantedlyスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "CareerCrossスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Daijobスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Eight Career Design", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Liiga", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "YOUTRUST", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Findy", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Forkwell Jobs", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "LAPRAS", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Paiza転職", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+
+    # --- スカウト：業務委託 ---
+    {"company": "SOKUDAN", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "Offers", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "Anycrew", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "HiPro Direct", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "Workship", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "ITプロパートナーズ", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "Saleshub", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "複業クラウド", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "ProSharing", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+
+    # --- ATS：国産 ---
+    {"company": "HRMOS採用", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "HERP Hire", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "ジョブカン採用管理", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "SONAR ATS", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "RPM", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "i-web", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "Talentio", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "Engage", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "Airワーク", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "採用一括かんりくん", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "HITO-Link", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "e2R PRO", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "WORKL", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "TORoo", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "RecoRu", "major": "ATS", "sub": "ATS（国産）"},
+
+    # --- ATS：外資 ---
+    {"company": "Greenhouse", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "Lever", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "Workday", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "SmartRecruiters", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "SAP SuccessFactors", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "iCIMS", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "Taleo", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "BambooHR", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "JazzHR", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "Bullhorn", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+
+    # --- その他 ---
+    {"company": "LinkedIn", "major": "その他", "sub": "SNS・その他"},
+    {"company": "X（旧Twitter）", "major": "その他", "sub": "SNS・その他"},
+    {"company": "Facebook", "major": "その他", "sub": "SNS・その他"},
+    {"company": "Instagram", "major": "その他", "sub": "SNS・その他"},
+    {"company": "note", "major": "その他", "sub": "SNS・その他"},
+    {"company": "自社採用サイト", "major": "その他", "sub": "SNS・その他"},
+    {"company": "Googleフォーム", "major": "その他", "sub": "SNS・その他"},
+    {"company": "LINE公式アカウント", "major": "その他", "sub": "SNS・その他"},
+]
 
 # ==========================================
 # 📋 項目定義
@@ -189,7 +315,7 @@ def create_error_row(company, major, sub, error_msg):
 def main():
     st.set_page_config(page_title="AI Recruitment Researcher", layout="wide")
     st.title("🚀 AI採用媒体・ATS比較ダッシュボード")
-    st.markdown("powered by Groq (Llama 3.3) - **完全自動リトライ対応版**")
+    st.markdown("powered by Groq (Llama 3.3) - **完全リスト・自動リトライ版**")
 
     # 1. データロードとクレンジング
     if os.path.exists(DB_FILE):
@@ -217,8 +343,6 @@ def main():
         with st.expander("📚 有名サービスの一括登録はこちら（クリックで開く）", expanded=True):
             if st.button("🚀 デフォルトの全サービスをリサーチ待ちリストに追加", type="primary"):
                 count = 0
-                # ※ここで本来は全リストを使います。前回のリストを使ってください。
-                # 動作確認のため簡易版リストで動くようになっています。
                 target_list = DEFAULT_TARGETS 
                 
                 for item in target_list:
@@ -301,7 +425,6 @@ def main():
                     progress_bar.progress((i + 1) / total_items)
                     
                     # API制限回避のための待機時間（重要）
-                    # 70bモデルはトークン消費が激しいので、基本待機時間を長めに取ります
                     time.sleep(3) 
 
                 # 全件終了後の保存処理
