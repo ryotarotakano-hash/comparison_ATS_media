@@ -12,7 +12,7 @@ from groq import Groq
 try:
     GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
 except FileNotFoundError:
-    st.error("🚫 APIキーが見つかりません！")
+    st.error("🚫 APIキーが見つかりません！Streamlit CloudのSecretsを設定してください。")
     st.stop()
 
 client = Groq(api_key=GROQ_API_KEY)
@@ -284,8 +284,21 @@ def main():
     st.title("🚀 AI採用媒体・ATS比較ダッシュボード")
     st.markdown("powered by Groq (Llama 3.3)")
 
+    # 1. データロードと「クレンジング」
     if os.path.exists(DB_FILE):
         df = pd.read_csv(DB_FILE)
+        
+        # ⚠️ 【重要修正】ここで重複チェックを「会社名＋カテゴリ」で行います
+        # これにより、同じ会社名でもカテゴリが違えば削除されずに残ります
+        initial_count = len(df)
+        df.drop_duplicates(subset=['会社名', '大項目', 'カテゴリ(詳細)'], keep='last', inplace=True)
+        final_count = len(df)
+        
+        # もし削除が発生したらCSVも更新しておく
+        if initial_count > final_count:
+            df.to_csv(DB_FILE, index=False)
+            
+        # カラム補完
         for col in COLUMNS:
             if col not in df.columns:
                 df[col] = "-"
@@ -305,11 +318,17 @@ def main():
             if st.button("🚀 デフォルトの全サービスをリサーチ待ちリストに追加", type="primary"):
                 count = 0
                 for item in DEFAULT_TARGETS:
+                    # リスト内の重複チェック
                     is_in_queue = any(
                         (q['会社名'] == item['company'] and q['中項目'] == item['sub']) 
                         for q in st.session_state.research_queue
                     )
-                    if not is_in_queue:
+                    # 既にDBにあるかチェック（会社名と中項目のセットでチェック）
+                    is_in_db = False
+                    if not df.empty:
+                        is_in_db = ((df['会社名'] == item['company']) & (df['カテゴリ(詳細)'] == item['sub'])).any()
+
+                    if not is_in_queue and not is_in_db:
                         st.session_state.research_queue.append({
                             "会社名": item["company"],
                             "大項目": item["major"],
@@ -321,7 +340,7 @@ def main():
                 if count > 0:
                     st.success(f"{count}件のサービスをリストに追加しました！下の「リサーチを一括実行」ボタンを押してください。")
                 else:
-                    st.info("全てのサービスは既にリストに追加されています。")
+                    st.info("全てのサービスは既にリスト/DBに含まれています。")
 
         st.divider()
 
@@ -376,9 +395,9 @@ def main():
                     major = row["大項目"]
                     sub = row["中項目"]
 
+                    # 直前のDB状態をチェック（並行実行時の重複防止）
                     is_exist = False
                     if not df.empty:
-                         # 重複チェック強化: 全く同じカテゴリで存在するか確認
                          is_exist = ((df['会社名'] == company) & (df['カテゴリ(詳細)'] == sub)).any()
 
                     if is_exist:
@@ -393,8 +412,11 @@ def main():
 
                 if new_rows:
                     new_df = pd.DataFrame(new_rows)
+                    # 結合後に再度重複チェックして保存
                     df = pd.concat([df, new_df], ignore_index=True)
+                    df.drop_duplicates(subset=['会社名', '大項目', 'カテゴリ(詳細)'], keep='last', inplace=True)
                     df.to_csv(DB_FILE, index=False)
+                    
                     st.success(f"✅ {len(new_rows)}件のリサーチが完了しました！")
                     st.session_state.research_queue = []
                     st.rerun()
@@ -443,21 +465,35 @@ def main():
         if not target_df.empty:
             st.write(f"### 比較表：{len(target_df)}社")
             
-            # ★ 修正ポイント: 会社名が重複している場合のクラッシュ回避策
-            # 表示用に一時的なデータフレームを作成
+            # 【重要】重複があってもエラーにならない表示処理
             df_display = target_df.copy()
             
-            # もし会社名が重複している場合（例：Indeedが2つある場合）
-            if df_display["会社名"].duplicated().any():
-                # 会社名にカテゴリ名をくっつけてユニークにする（例: Indeed (求人媒体（中途向け）)）
-                df_display["会社名_表示"] = df_display.apply(
-                    lambda row: f"{row['会社名']} ({row['カテゴリ(詳細)']})", axis=1
-                )
-                # それをインデックス（横軸）にする
-                comparison_table = df_display.set_index("会社名_表示").transpose()
-            else:
-                # 重複がなければそのまま
-                comparison_table = df_display.set_index("会社名").transpose()
+            # 1. 会社名＋カテゴリで一意のヘッダー名を作る
+            df_display["unique_header"] = df_display.apply(
+                lambda row: f"{row['会社名']} ({row['カテゴリ(詳細)']})", axis=1
+            )
+            
+            # 2. それでも重複があれば連番を振る（念の為の安全策）
+            if df_display["unique_header"].duplicated().any():
+                df_display["unique_header"] = df_display["unique_header"] + " #" + df_display.index.astype(str)
+            
+            # 3. 見た目の調整：重複している会社だけカッコ書き付きの名前にする
+            company_counts = df_display["会社名"].value_counts()
+            
+            def final_header_name(row):
+                header = row["unique_header"]
+                company = row["会社名"]
+                # 会社名が1回しか登場しないなら、シンプルに会社名だけでOK
+                if company_counts[company] == 1:
+                    return company
+                else:
+                    # 重複してるなら「Indeed (新卒)」のように区別できる名前を使う
+                    return header
+
+            df_display["display_name"] = df_display.apply(final_header_name, axis=1)
+            
+            # 比較表を表示（ここでdisplay_nameをヘッダーとして使う）
+            comparison_table = df_display.set_index("display_name").transpose()
             
             st.dataframe(comparison_table, height=800)
 
