@@ -44,7 +44,7 @@ CATEGORY_HIERARCHY = {
 }
 
 # ==========================================
-# 📚 デフォルト・マスターデータ（ユーザー指定）
+# 📚 デフォルト・マスターデータ
 # ==========================================
 DEFAULT_TARGETS = [
     # --- 求人媒体：新卒 ---
@@ -300,14 +300,11 @@ def main():
     with tab1:
         st.header("1. リサーチ対象の追加")
 
-        # --- デフォルトデータの一括読み込み ---
         with st.expander("📚 有名サービスの一括登録はこちら（クリックで開く）", expanded=True):
             st.markdown("あなたが定義した約100種類の主要サービスを一括でリストに追加します。")
             if st.button("🚀 デフォルトの全サービスをリサーチ待ちリストに追加", type="primary"):
-                # 重複を避けつつ追加
                 count = 0
                 for item in DEFAULT_TARGETS:
-                    # キューに既にあるかチェック
                     is_in_queue = any(
                         (q['会社名'] == item['company'] and q['中項目'] == item['sub']) 
                         for q in st.session_state.research_queue
@@ -328,7 +325,6 @@ def main():
 
         st.divider()
 
-        # --- 手動入力フォーム ---
         with st.container(border=True):
             st.caption("手動で追加する場合はこちら")
             col_input1, col_input2, col_input3, col_btn = st.columns([2, 2, 2, 1])
@@ -357,7 +353,6 @@ def main():
                     else:
                         st.warning("会社名を入力してください")
 
-        # --- リサーチ待ちリスト ---
         if st.session_state.research_queue:
             st.subheader(f"リサーチ待ちリスト（全 {len(st.session_state.research_queue)} 件）")
             st.caption("不要な行は選択して削除できます。準備ができたら実行ボタンを押してください。")
@@ -381,10 +376,9 @@ def main():
                     major = row["大項目"]
                     sub = row["中項目"]
 
-                    # 重複チェック：会社名と中項目の組み合わせで判断
-                    # (Wantedlyなどが求人媒体とスカウト媒体の両方にあるため)
                     is_exist = False
                     if not df.empty:
+                         # 重複チェック強化: 全く同じカテゴリで存在するか確認
                          is_exist = ((df['会社名'] == company) & (df['カテゴリ(詳細)'] == sub)).any()
 
                     if is_exist:
@@ -393,7 +387,6 @@ def main():
                         status_text.info(f"🤖 AIが『{company}』を調査中... ({sub})")
                         result = research_with_groq(company, major, sub)
                         new_rows.append(result)
-                        # APIレート制限対策
                         time.sleep(0.5)
                     
                     progress_bar.progress((i + 1) / total_items)
@@ -449,7 +442,23 @@ def main():
 
         if not target_df.empty:
             st.write(f"### 比較表：{len(target_df)}社")
-            comparison_table = target_df.set_index("会社名").transpose()
+            
+            # ★ 修正ポイント: 会社名が重複している場合のクラッシュ回避策
+            # 表示用に一時的なデータフレームを作成
+            df_display = target_df.copy()
+            
+            # もし会社名が重複している場合（例：Indeedが2つある場合）
+            if df_display["会社名"].duplicated().any():
+                # 会社名にカテゴリ名をくっつけてユニークにする（例: Indeed (求人媒体（中途向け）)）
+                df_display["会社名_表示"] = df_display.apply(
+                    lambda row: f"{row['会社名']} ({row['カテゴリ(詳細)']})", axis=1
+                )
+                # それをインデックス（横軸）にする
+                comparison_table = df_display.set_index("会社名_表示").transpose()
+            else:
+                # 重複がなければそのまま
+                comparison_table = df_display.set_index("会社名").transpose()
+            
             st.dataframe(comparison_table, height=800)
 
             csv_data = comparison_table.to_csv().encode('utf-8')
