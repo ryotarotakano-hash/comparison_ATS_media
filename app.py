@@ -19,10 +19,12 @@ client = Groq(api_key=GROQ_API_KEY)
 DB_FILE = 'recruitment_db.csv'
 
 # ==========================================
-# 📋 項目定義
+# 📋 項目定義（★メリット・デメリットを追加）
 # ==========================================
 COLUMNS = [
-    "会社名", "カテゴリ(入力)", "媒体カテゴリ", "主な利用目的", "向いている採用フェーズ", 
+    "会社名", "カテゴリ(入力)", 
+    "導入メリット", "導入デメリット", # ★ここに追加しました！
+    "媒体カテゴリ", "主な利用目的", "向いている採用フェーズ", 
     "ターゲット職種", "ターゲット年収帯", "経験レベル", "雇用形態対応",
     "課金形態", "初期費用", "最低契約期間", "想定採用単価", "予算コントロール",
     "登録ユーザー数", "アクティブユーザー傾向", "スカウト到達率",
@@ -35,10 +37,10 @@ COLUMNS = [
 CATEGORY_OPTIONS = ["求人媒体", "スカウト媒体", "ATS", "その他"]
 
 # ==========================================
-# 🧠 AIエンジニアリング部分 (精度向上版)
+# 🧠 AIエンジニアリング部分
 # ==========================================
 def research_with_groq(company_name, category_label):
-    # ★ここが変更点：指示をめちゃくちゃ具体的にしました
+    # プロンプトも強化して、メリット・デメリットをしっかり書かせます
     prompt = f"""
     あなたは日本の採用市場に精通したトップコンサルタントです。
     以下のサービスについて情報を検索し、JSON形式で回答してください。
@@ -49,21 +51,18 @@ def research_with_groq(company_name, category_label):
     出力JSONキー:
     {", ".join(COLUMNS)}
 
-    【重要：データ抽出の絶対ルール】
-    1. **ターゲット年収帯**:
-       - ⚠️ 必ず「年収」で回答すること。「月収」は不可。
-       - もし情報源が月給表記（例: 30万円）の場合は、×12〜14ヶ月分として年収換算すること（例: "360〜450万円"）。
-       - 単位は「万円」で統一すること。
+    【重要：データ抽出ルール】
+    1. **導入メリット / 導入デメリット**:
+       - それぞれ「3点ほど」箇条書きや短文で要約して記載すること。
+       - 企業視点でのメリット（例: エンジニア採用に強い、コストが安い）を書くこと。
+       - デメリットはリスクや手間（例: スカウト工数がかかる、認知度が低い）を書くこと。
+
+    2. **ターゲット年収帯**:
+       - ⚠️ 必ず「年収」表記にすること（月収×12〜14で換算）。単位は「万円」。
     
-    2. **課金形態・費用**:
-       - 具体的な金額が不明な場合は「要問い合わせ」とする。
-       - 嘘の金額は書かないこと。
-
-    3. **媒体カテゴリ**:
-       - "{category_label}" という分類を尊重しつつ、具体的な種別（ダイレクトリクルーティング、掲載課金型など）を書くこと。
-
-    4. **出力形式**:
-       - 必ず有効なJSON形式のみを出力すること。余計な解説文は不要。
+    3. **全体ルール**:
+       - 数値は目安でOK。不明な場合は「要問い合わせ」。
+       - 必ず有効なJSON形式のみを出力すること。
     """
 
     try:
@@ -74,7 +73,7 @@ def research_with_groq(company_name, category_label):
             ],
             model="llama-3.3-70b-versatile",
             response_format={"type": "json_object"},
-            temperature=0.3, # ★創造性を少し下げて、事実重視の設定にしました
+            temperature=0.3,
         )
         response_content = completion.choices[0].message.content
         data = json.loads(response_content)
@@ -98,6 +97,13 @@ def main():
 
     if os.path.exists(DB_FILE):
         df = pd.read_csv(DB_FILE)
+        
+        # ★既存データとの互換性チェック
+        # カラムが増えたので、古いCSVを読み込むとエラーになるのを防ぐ処理
+        for col in COLUMNS:
+            if col not in df.columns:
+                df[col] = "-" # 新しい列がなければ空で追加
+                
     else:
         df = pd.DataFrame(columns=COLUMNS)
 
@@ -141,7 +147,7 @@ def main():
                     if company in df["会社名"].values:
                         status_text.info(f"⏭️ {company} は既に登録済みです。スキップします。")
                     else:
-                        status_text.info(f"🤖 AIが『{company}』を詳細分析中...")
+                        status_text.info(f"🤖 AIが『{company}』のメリット・デメリットを含めて調査中...")
                         result = research_with_groq(company, category)
                         new_rows.append(result)
                         time.sleep(0.5) 
@@ -152,7 +158,7 @@ def main():
                 new_df = pd.DataFrame(new_rows)
                 df = pd.concat([df, new_df], ignore_index=True)
                 df.to_csv(DB_FILE, index=False)
-                st.success(f"✅ {len(new_rows)}件の分析が完了しました！（年収精度向上版）")
+                st.success(f"✅ {len(new_rows)}件の分析完了！メリット・デメリットも追加されました。")
                 st.dataframe(new_rows)
             else:
                 st.info("新規に追加されたデータはありませんでした。")
