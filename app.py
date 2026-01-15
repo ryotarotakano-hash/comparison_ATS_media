@@ -45,7 +45,7 @@ CATEGORY_HIERARCHY = {
 }
 
 # ==========================================
-# 📚 デフォルト・マスターデータ（完全版）
+# 📚 デフォルト・マスターデータ（全量）
 # ==========================================
 DEFAULT_TARGETS = [
     # --- 求人媒体：新卒 ---
@@ -227,7 +227,7 @@ COLUMNS = [
 ]
 
 # ==========================================
-# 🧠 AIエンジニアリング部分 (リトライ強化版)
+# 🧠 AIエンジニアリング部分
 # ==========================================
 def research_with_groq(company_name, major_category, sub_category):
     prompt = f"""
@@ -256,7 +256,7 @@ def research_with_groq(company_name, major_category, sub_category):
 
     # リトライ設定
     max_retries = 3
-    base_delay = 5 # 秒
+    base_delay = 2 # 秒
 
     for attempt in range(max_retries):
         try:
@@ -272,7 +272,6 @@ def research_with_groq(company_name, major_category, sub_category):
             response_content = completion.choices[0].message.content
             data = json.loads(response_content)
             
-            # データ整形
             safe_data = {col: data.get(col, "-") for col in COLUMNS}
             safe_data["会社名"] = company_name
             safe_data["大項目"] = major_category
@@ -281,17 +280,16 @@ def research_with_groq(company_name, major_category, sub_category):
             return safe_data
 
         except RateLimitError as e:
-            # レート制限にかかった場合
-            wait_time = 60 + random.randint(5, 15) # 1分ちょっと待つ
+            wait_time = 60 + random.randint(5, 15)
             if attempt < max_retries - 1:
-                st.toast(f"⏳ 制限検出: {company_name} の処理を {wait_time}秒 待機して再試行します...", icon="⚠️")
+                # ログには出すが、画面にはトーストで控えめに通知
+                st.toast(f"⏳ 混雑中... {company_name} は {wait_time}秒後に再開します。", icon="💤")
                 time.sleep(wait_time)
                 continue
             else:
-                return create_error_row(company_name, major_category, sub_category, f"レート制限エラー: {str(e)}")
+                return create_error_row(company_name, major_category, sub_category, f"レート制限: {str(e)}")
 
         except Exception as e:
-            # その他のエラー
             if attempt < max_retries - 1:
                 time.sleep(base_delay * (attempt + 1))
                 continue
@@ -301,12 +299,11 @@ def research_with_groq(company_name, major_category, sub_category):
     return create_error_row(company_name, major_category, sub_category, "不明なエラー")
 
 def create_error_row(company, major, sub, error_msg):
-    """エラー時でも行が消えないように、全カラム埋まった辞書を返す"""
     error_row = {col: "⚠️取得失敗" for col in COLUMNS}
     error_row["会社名"] = company
     error_row["大項目"] = major
     error_row["カテゴリ(詳細)"] = sub
-    error_row["導入メリット"] = error_msg # エラー内容を見える場所に書く
+    error_row["導入メリット"] = error_msg 
     return error_row
 
 # ==========================================
@@ -315,15 +312,13 @@ def create_error_row(company, major, sub, error_msg):
 def main():
     st.set_page_config(page_title="AI Recruitment Researcher", layout="wide")
     st.title("🚀 AI採用媒体・ATS比較ダッシュボード")
-    st.markdown("powered by Groq (Llama 3.3) - **完全リスト・自動リトライ版**")
+    st.markdown("powered by Groq (Llama 3.3) - **ファイナル・完全版**")
 
-    # 1. データロードとクレンジング
+    # DB読み込み
     if os.path.exists(DB_FILE):
         try:
             df = pd.read_csv(DB_FILE)
-            # 重複整理: 会社名＋カテゴリが同じなら最新を残す
             df.drop_duplicates(subset=['会社名', '大項目', 'カテゴリ(詳細)'], keep='last', inplace=True)
-            # カラム補完
             for col in COLUMNS:
                 if col not in df.columns:
                     df[col] = "-"
@@ -340,18 +335,14 @@ def main():
     with tab1:
         st.header("1. リサーチ対象の追加")
 
-        with st.expander("📚 有名サービスの一括登録はこちら（クリックで開く）", expanded=True):
+        with st.expander("📚 有名サービスの一括登録（クリックで開く）", expanded=True):
             if st.button("🚀 デフォルトの全サービスをリサーチ待ちリストに追加", type="primary"):
                 count = 0
-                target_list = DEFAULT_TARGETS 
-                
-                for item in target_list:
-                    # リスト内の重複チェック
+                for item in DEFAULT_TARGETS:
                     is_in_queue = any(
                         (q['会社名'] == item['company'] and q['中項目'] == item['sub']) 
                         for q in st.session_state.research_queue
                     )
-                    # DB内の重複チェック
                     is_in_db = False
                     if not df.empty:
                         is_in_db = ((df['会社名'] == item['company']) & (df['カテゴリ(詳細)'] == item['sub'])).any()
@@ -372,7 +363,7 @@ def main():
 
         st.divider()
 
-        # 手動入力エリア
+        # 手動入力
         with st.container(border=True):
             col_input1, col_input2, col_input3, col_btn = st.columns([2, 2, 2, 1])
             with col_input1:
@@ -393,10 +384,8 @@ def main():
                             "中項目": input_sub,
                             "ステータス": "待機中"
                         })
-                    else:
-                        st.warning("会社名を入力してください")
 
-        # リサーチ実行エリア
+        # リサーチ実行
         if st.session_state.research_queue:
             st.subheader(f"リサーチ待ちリスト（全 {len(st.session_state.research_queue)} 件）")
             
@@ -405,7 +394,9 @@ def main():
             
             if st.button("🚀 リストのAIリサーチを一括実行", type="primary"):
                 progress_bar = st.progress(0)
-                status_box = st.container(border=True)
+                
+                # ★重要：statusコンテナを使って進捗をリアルタイム表示
+                status_container = st.status("AIがリサーチを実行中...", expanded=True)
                 
                 new_rows = []
                 total_items = len(queue_df)
@@ -415,37 +406,36 @@ def main():
                     major = row["大項目"]
                     sub = row["中項目"]
 
-                    status_box.info(f"🤖 ({i+1}/{total_items}) 『{company}』を調査中... ({sub})")
+                    status_container.write(f"🔍 ({i+1}/{total_items}) 『{company}』を調査中... ({sub})")
                     
-                    # リサーチ実行（リトライロジック込み）
+                    # リサーチ
                     result = research_with_groq(company, major, sub)
-                    new_rows.append(result)
                     
-                    # 進捗バー更新
+                    # ★重要：1件ごとに即時保存（オートセーブ）
+                    # これで途中で止まってもデータは残る
+                    new_row_df = pd.DataFrame([result])
+                    if os.path.exists(DB_FILE):
+                        current_df = pd.read_csv(DB_FILE)
+                        updated_df = pd.concat([current_df, new_row_df], ignore_index=True)
+                    else:
+                        updated_df = new_row_df
+                    
+                    updated_df.drop_duplicates(subset=['会社名', '大項目', 'カテゴリ(詳細)'], keep='last', inplace=True)
+                    updated_df.to_csv(DB_FILE, index=False)
+                    
                     progress_bar.progress((i + 1) / total_items)
                     
-                    # API制限回避のための待機時間（重要）
-                    time.sleep(3) 
+                    # 待機時間（1.5秒に短縮）
+                    time.sleep(1.5) 
 
-                # 全件終了後の保存処理
-                if new_rows:
-                    new_df = pd.DataFrame(new_rows)
-                    # 既存データと結合
-                    df = pd.concat([df, new_df], ignore_index=True)
-                    # 重複排除して保存
-                    df.drop_duplicates(subset=['会社名', '大項目', 'カテゴリ(詳細)'], keep='last', inplace=True)
-                    df.to_csv(DB_FILE, index=False)
-                    
-                    st.success(f"✅ {len(new_rows)}件のリサーチが完了しました！")
-                    st.session_state.research_queue = [] # キューを空にする
-                    time.sleep(2)
-                    st.rerun() # 画面更新
-                else:
-                    st.warning("データが取得できませんでした。")
+                status_container.update(label="✅ 全リサーチ完了！", state="complete", expanded=False)
+                st.success("完了しました！画面を更新します。")
+                st.session_state.research_queue = []
+                time.sleep(1)
+                st.rerun()
 
         st.divider()
         
-        # データベース管理
         st.subheader("📚 蓄積されたデータベース")
         col_reset, col_dummy = st.columns([1, 3])
         with col_reset:
@@ -484,17 +474,14 @@ def main():
         if not target_df.empty:
             st.write(f"### 比較表：{len(target_df)}社")
             
-            # 表示用データ作成
             df_display = target_df.copy()
             df_display["unique_header"] = df_display.apply(
                 lambda row: f"{row['会社名']} ({row['カテゴリ(詳細)']})", axis=1
             )
             
-            # 強制ユニーク化（エラー回避）
             if df_display["unique_header"].duplicated().any():
                 df_display["unique_header"] = df_display["unique_header"] + " #" + df_display.index.astype(str)
             
-            # 見出し整理
             company_counts = df_display["会社名"].value_counts()
             def final_header_name(row):
                 if company_counts[row["会社名"]] == 1:
@@ -504,7 +491,6 @@ def main():
 
             df_display["display_name"] = df_display.apply(final_header_name, axis=1)
             
-            # 転置して表示
             comparison_table = df_display.set_index("display_name").transpose()
             st.dataframe(comparison_table, height=800)
 
