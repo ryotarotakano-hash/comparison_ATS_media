@@ -19,9 +19,8 @@ client = Groq(api_key=GROQ_API_KEY)
 DB_FILE = 'recruitment_db.csv'
 
 # ==========================================
-# 📋 カテゴリ定義（階層構造）
+# 📋 カテゴリ定義
 # ==========================================
-# ユーザー要望の階層構造を定義
 CATEGORY_HIERARCHY = {
     "求人媒体": [
         "求人媒体（新卒向け）",
@@ -38,14 +37,183 @@ CATEGORY_HIERARCHY = {
     "ATS": [
         "ATS（国産）",
         "ATS（外資系・グローバル）"
+    ],
+    "その他": [
+        "SNS・その他"
     ]
 }
+
+# ==========================================
+# 📚 デフォルト・マスターデータ（ユーザー指定）
+# ==========================================
+DEFAULT_TARGETS = [
+    # --- 求人媒体：新卒 ---
+    {"company": "マイナビ2027（旧マイナビ新卒）", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "リクナビ", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "キャリタス就活", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "ONE CAREER", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "OfferBox（※スカウト要素強）", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "ジョブコミット", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "Future Finder", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "LabBase（理系）", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "TECH OFFER（理系）", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "Paiza新卒", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "Re就活キャンパス（旧あさがくナビ）", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "Goodfind", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "外資就活ドットコム", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "チアキャリア", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+    {"company": "JobSpring", "major": "求人媒体", "sub": "求人媒体（新卒向け）"},
+
+    # --- 求人媒体：中途 ---
+    {"company": "Indeed", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "リクナビNEXT", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "マイナビ転職", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "doda", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "エン転職", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "type", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "女の転職type", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "はたらいく", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "FromA NAVI", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "イーキャリア", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "CareerCross（バイリンガル）", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "Daijob", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "OpenWork求人", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "ミドルの転職", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "エン ミドルハイクラス", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "AMBI", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "Liiga", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "Wantedly", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "JobQ転職", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+    {"company": "Googleしごと検索", "major": "求人媒体", "sub": "求人媒体（中途向け）"},
+
+    # --- 求人媒体：アルバイト ---
+    {"company": "タウンワーク", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "バイトル", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "マイナビバイト", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "Indeed", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "ショットワークス", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "フロムエー", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "LINEバイト", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "ギガバイト", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+    {"company": "an", "major": "求人媒体", "sub": "求人媒体（アルバイト・パート向け）"},
+
+    # --- 求人媒体：インターン ---
+    {"company": "Wantedly", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "マイナビインターンシップ", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "リクナビインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "Infra", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "ゼロワンインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "キャリアバイト", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "エンジニアインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "Paizaインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "LabBaseインターン", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "Chegg Internships", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+    {"company": "Intern Street", "major": "求人媒体", "sub": "求人媒体（インターン・学生バイト向け）"},
+
+    # --- 求人媒体：業務委託 ---
+    {"company": "CrowdWorks", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Lancers", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Workship", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Midworks", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "ITプロパートナーズ", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "レバテックフリーランス", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "ココナラ", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "SOKUDAN", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "フリーランススタート", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Anycrew", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Offers", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "HiPro Direct", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "Saleshub", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "複業クラウド", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+    {"company": "ProSharing", "major": "求人媒体", "sub": "求人媒体（業務委託・フリーランス向け）"},
+
+    # --- スカウト：新卒 ---
+    {"company": "OfferBox", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "LabBase", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "TECH OFFER", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "Paiza新卒スカウト", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "Future Finder", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "キャリアチケットスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "キミスカ", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "dodaキャンパス", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "iroots", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+    {"company": "Re就活キャンパススカウト", "major": "スカウト媒体", "sub": "スカウト媒体（新卒向け）"},
+
+    # --- スカウト：中途 ---
+    {"company": "ビズリーチ", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "リクルートダイレクトスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "dodaダイレクト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "AMBI", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "ミドルの転職", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "OpenWorkスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Green", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Wantedlyスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "CareerCrossスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Daijobスカウト", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Eight Career Design", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Liiga", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "YOUTRUST", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Findy", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Forkwell Jobs", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "LAPRAS", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+    {"company": "Paiza転職", "major": "スカウト媒体", "sub": "スカウト媒体（中途向け）"},
+
+    # --- スカウト：業務委託 ---
+    {"company": "SOKUDAN", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "Offers", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "Anycrew", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "HiPro Direct", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "Workship", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "ITプロパートナーズ", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "Saleshub", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "複業クラウド", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+    {"company": "ProSharing", "major": "スカウト媒体", "sub": "スカウト媒体（業務委託向け）"},
+
+    # --- ATS：国産 ---
+    {"company": "HRMOS採用", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "HERP Hire", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "ジョブカン採用管理", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "SONAR ATS", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "RPM", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "i-web", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "Talentio", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "Engage（エン・ジャパン）", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "Airワーク 採用管理", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "採用一括かんりくん", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "HITO-Link", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "e2R PRO", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "WORKL", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "TORoo", "major": "ATS", "sub": "ATS（国産）"},
+    {"company": "RecoRu", "major": "ATS", "sub": "ATS（国産）"},
+
+    # --- ATS：外資 ---
+    {"company": "Greenhouse", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "Lever", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "Workday Recruiting", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "SmartRecruiters", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "SAP SuccessFactors", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "iCIMS", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "Taleo", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "BambooHR", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "JazzHR", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+    {"company": "Bullhorn", "major": "ATS", "sub": "ATS（外資系・グローバル）"},
+
+    # --- その他 ---
+    {"company": "LinkedIn", "major": "その他", "sub": "SNS・その他"},
+    {"company": "X（旧Twitter）", "major": "その他", "sub": "SNS・その他"},
+    {"company": "Facebook", "major": "その他", "sub": "SNS・その他"},
+    {"company": "Instagram", "major": "その他", "sub": "SNS・その他"},
+    {"company": "note（採用広報）", "major": "その他", "sub": "SNS・その他"},
+    {"company": "自社採用サイト", "major": "その他", "sub": "SNS・その他"},
+    {"company": "Googleフォーム＋ATS連携", "major": "その他", "sub": "SNS・その他"},
+    {"company": "LINE公式アカウント採用", "major": "その他", "sub": "SNS・その他"},
+]
 
 # ==========================================
 # 📋 項目定義
 # ==========================================
 COLUMNS = [
-    "会社名", "大項目", "カテゴリ(詳細)", # ★項目を追加しました
+    "会社名", "大項目", "カテゴリ(詳細)",
     "導入メリット", "導入デメリット", 
     "媒体カテゴリ", "主な利用目的", "向いている採用フェーズ", 
     "ターゲット職種", "ターゲット年収帯", "経験レベル", "雇用形態対応",
@@ -61,14 +229,12 @@ COLUMNS = [
 # 🧠 AIエンジニアリング部分
 # ==========================================
 def research_with_groq(company_name, major_category, sub_category):
-    # ★プロンプトに大項目と中項目の両方を渡して精度を高めます
     prompt = f"""
     あなたは日本の採用市場に精通したトップコンサルタントです。
     以下のサービスについて情報を検索し、JSON形式で回答してください。
     
     対象サービス名: {company_name}
     サービス分類: {major_category} > {sub_category}
-    (この分類に基づき、適切なコンテキストで情報を抽出してください)
 
     出力JSONキー:
     {", ".join(COLUMNS)}
@@ -100,7 +266,6 @@ def research_with_groq(company_name, major_category, sub_category):
         response_content = completion.choices[0].message.content
         data = json.loads(response_content)
         
-        # データの整形
         safe_data = {col: data.get(col, "-") for col in COLUMNS}
         safe_data["会社名"] = company_name
         safe_data["大項目"] = major_category
@@ -119,17 +284,14 @@ def main():
     st.title("🚀 AI採用媒体・ATS比較ダッシュボード")
     st.markdown("powered by Groq (Llama 3.3)")
 
-    # データベース読み込み
     if os.path.exists(DB_FILE):
         df = pd.read_csv(DB_FILE)
-        # カラム互換性チェック
         for col in COLUMNS:
             if col not in df.columns:
                 df[col] = "-"
     else:
         df = pd.DataFrame(columns=COLUMNS)
 
-    # セッション状態で「リサーチ待ちリスト」を管理
     if "research_queue" not in st.session_state:
         st.session_state.research_queue = []
 
@@ -137,30 +299,55 @@ def main():
 
     with tab1:
         st.header("1. リサーチ対象の追加")
-        st.markdown("会社名を入力し、カテゴリを選択してリストに追加してください。")
 
-        # --- 入力フォーム ---
+        # --- デフォルトデータの一括読み込み ---
+        with st.expander("📚 有名サービスの一括登録はこちら（クリックで開く）", expanded=True):
+            st.markdown("あなたが定義した約100種類の主要サービスを一括でリストに追加します。")
+            if st.button("🚀 デフォルトの全サービスをリサーチ待ちリストに追加", type="primary"):
+                # 重複を避けつつ追加
+                count = 0
+                for item in DEFAULT_TARGETS:
+                    # キューに既にあるかチェック
+                    is_in_queue = any(
+                        (q['会社名'] == item['company'] and q['中項目'] == item['sub']) 
+                        for q in st.session_state.research_queue
+                    )
+                    if not is_in_queue:
+                        st.session_state.research_queue.append({
+                            "会社名": item["company"],
+                            "大項目": item["major"],
+                            "中項目": item["sub"],
+                            "ステータス": "待機中"
+                        })
+                        count += 1
+                
+                if count > 0:
+                    st.success(f"{count}件のサービスをリストに追加しました！下の「リサーチを一括実行」ボタンを押してください。")
+                else:
+                    st.info("全てのサービスは既にリストに追加されています。")
+
+        st.divider()
+
+        # --- 手動入力フォーム ---
         with st.container(border=True):
+            st.caption("手動で追加する場合はこちら")
             col_input1, col_input2, col_input3, col_btn = st.columns([2, 2, 2, 1])
             
             with col_input1:
                 input_company = st.text_input("会社名", placeholder="例: Wantedly")
             
             with col_input2:
-                # 大項目の選択
                 input_major = st.selectbox("① 大項目", list(CATEGORY_HIERARCHY.keys()))
             
             with col_input3:
-                # 選ばれた大項目に基づいて、中項目の選択肢を変える
                 sub_options = CATEGORY_HIERARCHY[input_major]
                 input_sub = st.selectbox("② 中項目", sub_options)
             
             with col_btn:
-                st.write("") # ボタン位置調整用の空白
+                st.write("") 
                 st.write("") 
                 if st.button("リストに追加", type="secondary"):
                     if input_company:
-                        # リストに追加
                         st.session_state.research_queue.append({
                             "会社名": input_company,
                             "大項目": input_major,
@@ -170,11 +357,11 @@ def main():
                     else:
                         st.warning("会社名を入力してください")
 
-        # --- リサーチ待ちリストの表示 ---
+        # --- リサーチ待ちリスト ---
         if st.session_state.research_queue:
-            st.subheader("リサーチ待ちリスト")
+            st.subheader(f"リサーチ待ちリスト（全 {len(st.session_state.research_queue)} 件）")
+            st.caption("不要な行は選択して削除できます。準備ができたら実行ボタンを押してください。")
             
-            # 編集可能なデータフレームとして表示
             queue_df = pd.DataFrame(st.session_state.research_queue)
             edited_queue = st.data_editor(
                 queue_df,
@@ -182,7 +369,6 @@ def main():
                 key="queue_editor"
             )
             
-            # リサーチ実行ボタン
             if st.button("🚀 リストのAIリサーチを一括実行", type="primary"):
                 progress_bar = st.progress(0)
                 status_text = st.empty()
@@ -195,28 +381,30 @@ def main():
                     major = row["大項目"]
                     sub = row["中項目"]
 
-                    # 既にDBにあるかチェック
-                    if company in df["会社名"].values:
-                        status_text.info(f"⏭️ {company} は既にデータベースに存在します。スキップします。")
+                    # 重複チェック：会社名と中項目の組み合わせで判断
+                    # (Wantedlyなどが求人媒体とスカウト媒体の両方にあるため)
+                    is_exist = False
+                    if not df.empty:
+                         is_exist = ((df['会社名'] == company) & (df['カテゴリ(詳細)'] == sub)).any()
+
+                    if is_exist:
+                        status_text.info(f"⏭️ {company} ({sub}) は既にDBに存在します。スキップ。")
                     else:
-                        status_text.info(f"🤖 AIが『{company}』を調査中... ({major} > {sub})")
-                        # AIリサーチ実行
+                        status_text.info(f"🤖 AIが『{company}』を調査中... ({sub})")
                         result = research_with_groq(company, major, sub)
                         new_rows.append(result)
+                        # APIレート制限対策
                         time.sleep(0.5)
                     
                     progress_bar.progress((i + 1) / total_items)
 
-                # 結果を保存
                 if new_rows:
                     new_df = pd.DataFrame(new_rows)
                     df = pd.concat([df, new_df], ignore_index=True)
                     df.to_csv(DB_FILE, index=False)
                     st.success(f"✅ {len(new_rows)}件のリサーチが完了しました！")
-                    
-                    # リストを空にする
                     st.session_state.research_queue = []
-                    st.rerun() # 画面更新
+                    st.rerun()
                 else:
                     st.info("新規データはありませんでした。")
                     st.session_state.research_queue = []
@@ -224,7 +412,6 @@ def main():
 
         st.divider()
         
-        # --- 既存データ ---
         st.subheader("📚 蓄積されたデータベース")
         col_reset, col_dummy = st.columns([1, 3])
         with col_reset:
@@ -240,15 +427,12 @@ def main():
     with tab2:
         st.header("📊 比較表の生成")
         
-        # フィルタリング機能の強化（大項目・中項目で絞り込み）
         filter_col1, filter_col2 = st.columns(2)
         with filter_col1:
-            # ユニークな大項目を取得
             available_majors = ["全て"] + list(df["大項目"].unique()) if "大項目" in df.columns else ["全て"]
             filter_major = st.selectbox("大項目で絞り込み", available_majors)
             
         with filter_col2:
-            # 選ばれた大項目に含まれる中項目だけを表示
             if filter_major == "全て":
                 available_subs = ["全て"] + list(df["カテゴリ(詳細)"].unique()) if "カテゴリ(詳細)" in df.columns else ["全て"]
             else:
@@ -257,7 +441,6 @@ def main():
             
             filter_sub = st.selectbox("中項目で絞り込み", available_subs)
 
-        # データの抽出
         target_df = df.copy()
         if filter_major != "全て":
             target_df = target_df[target_df["大項目"] == filter_major]
