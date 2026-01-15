@@ -19,10 +19,33 @@ client = Groq(api_key=GROQ_API_KEY)
 DB_FILE = 'recruitment_db.csv'
 
 # ==========================================
+# 📋 カテゴリ定義（階層構造）
+# ==========================================
+# ユーザー要望の階層構造を定義
+CATEGORY_HIERARCHY = {
+    "求人媒体": [
+        "求人媒体（新卒向け）",
+        "求人媒体（中途向け）",
+        "求人媒体（アルバイト・パート向け）",
+        "求人媒体（インターン・学生バイト向け）",
+        "求人媒体（業務委託・フリーランス向け）"
+    ],
+    "スカウト媒体": [
+        "スカウト媒体（新卒向け）",
+        "スカウト媒体（中途向け）",
+        "スカウト媒体（業務委託向け）"
+    ],
+    "ATS": [
+        "ATS（国産）",
+        "ATS（外資系・グローバル）"
+    ]
+}
+
+# ==========================================
 # 📋 項目定義
 # ==========================================
 COLUMNS = [
-    "会社名", "カテゴリ(入力)", 
+    "会社名", "大項目", "カテゴリ(詳細)", # ★項目を追加しました
     "導入メリット", "導入デメリット", 
     "媒体カテゴリ", "主な利用目的", "向いている採用フェーズ", 
     "ターゲット職種", "ターゲット年収帯", "経験レベル", "雇用形態対応",
@@ -34,19 +57,18 @@ COLUMNS = [
     "サポート体制", "導入企業規模"
 ]
 
-CATEGORY_OPTIONS = ["求人媒体", "スカウト媒体", "ATS", "その他"]
-
 # ==========================================
 # 🧠 AIエンジニアリング部分
 # ==========================================
-def research_with_groq(company_name, category_label):
-    # ★ここを修正：括弧を禁止し、シンプルな箇条書きを強制します
+def research_with_groq(company_name, major_category, sub_category):
+    # ★プロンプトに大項目と中項目の両方を渡して精度を高めます
     prompt = f"""
     あなたは日本の採用市場に精通したトップコンサルタントです。
     以下のサービスについて情報を検索し、JSON形式で回答してください。
     
     対象サービス名: {company_name}
-    ユーザー指定カテゴリ: {category_label}
+    サービス分類: {major_category} > {sub_category}
+    (この分類に基づき、適切なコンテキストで情報を抽出してください)
 
     出力JSONキー:
     {", ".join(COLUMNS)}
@@ -56,11 +78,6 @@ def research_with_groq(company_name, category_label):
        - 採用担当者視点で、それぞれ3点ほど簡潔に挙げること。
        - **禁止事項**: 文頭や文末に「」『』() [] などの括弧記号は一切つけないこと。
        - **形式**: 各項目の頭に「・」をつけ、改行で区切ること。
-       （良い例: 
-         ・エンジニア採用に強い
-         ・初期費用が無料
-         ・運用の手間が少ない）
-       （悪い例: 「エンジニア採用に強い」、「初期費用が無料」）
 
     2. **ターゲット年収帯**:
        - ⚠️ 必ず「年収」表記にすること（月収×12〜14で換算）。単位は「万円」。
@@ -83,9 +100,11 @@ def research_with_groq(company_name, category_label):
         response_content = completion.choices[0].message.content
         data = json.loads(response_content)
         
+        # データの整形
         safe_data = {col: data.get(col, "-") for col in COLUMNS}
         safe_data["会社名"] = company_name
-        safe_data["カテゴリ(入力)"] = category_label
+        safe_data["大項目"] = major_category
+        safe_data["カテゴリ(詳細)"] = sub_category
         
         return safe_data
 
@@ -100,74 +119,113 @@ def main():
     st.title("🚀 AI採用媒体・ATS比較ダッシュボード")
     st.markdown("powered by Groq (Llama 3.3)")
 
+    # データベース読み込み
     if os.path.exists(DB_FILE):
         df = pd.read_csv(DB_FILE)
-        # 既存データとの互換性チェック
+        # カラム互換性チェック
         for col in COLUMNS:
             if col not in df.columns:
                 df[col] = "-"
     else:
         df = pd.DataFrame(columns=COLUMNS)
 
-    tab1, tab2 = st.tabs(["📝 フロー1：一括登録・リサーチ", "📊 フロー2：比較表出力"])
+    # セッション状態で「リサーチ待ちリスト」を管理
+    if "research_queue" not in st.session_state:
+        st.session_state.research_queue = []
+
+    tab1, tab2 = st.tabs(["📝 フロー1：ラベリング・リサーチ", "📊 フロー2：比較表出力"])
 
     with tab1:
-        st.header("1. 比較したいサービスを入力")
-        st.markdown("以下の表に、調査したい**会社名**と**カテゴリ**を入力してください。")
+        st.header("1. リサーチ対象の追加")
+        st.markdown("会社名を入力し、カテゴリを選択してリストに追加してください。")
 
-        input_df = pd.DataFrame([
-            {"会社名": "Green", "カテゴリ": "スカウト媒体"},
-            {"会社名": "Indeed", "カテゴリ": "求人媒体"},
-            {"会社名": "HRMOS", "カテゴリ": "ATS"},
-        ])
-
-        edited_df = st.data_editor(
-            input_df,
-            num_rows="dynamic",
-            column_config={
-                "カテゴリ": st.column_config.SelectboxColumn(
-                    "カテゴリ",
-                    options=CATEGORY_OPTIONS,
-                    required=True,
-                )
-            },
-            key="input_editor"
-        )
-
-        if st.button("🚀 AIリサーチを一括実行", type="primary"):
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+        # --- 入力フォーム ---
+        with st.container(border=True):
+            col_input1, col_input2, col_input3, col_btn = st.columns([2, 2, 2, 1])
             
-            total_rows = len(edited_df)
-            new_rows = []
-
-            for i, row in edited_df.iterrows():
-                company = row["会社名"]
-                category = row["カテゴリ"]
-
-                if company:
-                    if company in df["会社名"].values:
-                        status_text.info(f"⏭️ {company} は既に登録済みです。スキップします。")
+            with col_input1:
+                input_company = st.text_input("会社名", placeholder="例: Wantedly")
+            
+            with col_input2:
+                # 大項目の選択
+                input_major = st.selectbox("① 大項目", list(CATEGORY_HIERARCHY.keys()))
+            
+            with col_input3:
+                # 選ばれた大項目に基づいて、中項目の選択肢を変える
+                sub_options = CATEGORY_HIERARCHY[input_major]
+                input_sub = st.selectbox("② 中項目", sub_options)
+            
+            with col_btn:
+                st.write("") # ボタン位置調整用の空白
+                st.write("") 
+                if st.button("リストに追加", type="secondary"):
+                    if input_company:
+                        # リストに追加
+                        st.session_state.research_queue.append({
+                            "会社名": input_company,
+                            "大項目": input_major,
+                            "中項目": input_sub,
+                            "ステータス": "待機中"
+                        })
                     else:
-                        status_text.info(f"🤖 AIが『{company}』を調査中...")
-                        result = research_with_groq(company, category)
-                        new_rows.append(result)
-                        time.sleep(0.5) 
-                
-                progress_bar.progress((i + 1) / total_rows)
+                        st.warning("会社名を入力してください")
 
-            if new_rows:
-                new_df = pd.DataFrame(new_rows)
-                df = pd.concat([df, new_df], ignore_index=True)
-                df.to_csv(DB_FILE, index=False)
-                st.success(f"✅ {len(new_rows)}件の分析完了！表示形式を修正しました。")
-                st.dataframe(new_rows)
-            else:
-                st.info("新規に追加されたデータはありませんでした。")
+        # --- リサーチ待ちリストの表示 ---
+        if st.session_state.research_queue:
+            st.subheader("リサーチ待ちリスト")
+            
+            # 編集可能なデータフレームとして表示
+            queue_df = pd.DataFrame(st.session_state.research_queue)
+            edited_queue = st.data_editor(
+                queue_df,
+                num_rows="dynamic",
+                key="queue_editor"
+            )
+            
+            # リサーチ実行ボタン
+            if st.button("🚀 リストのAIリサーチを一括実行", type="primary"):
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                new_rows = []
+                total_items = len(edited_queue)
+                
+                for i, row in edited_queue.iterrows():
+                    company = row["会社名"]
+                    major = row["大項目"]
+                    sub = row["中項目"]
+
+                    # 既にDBにあるかチェック
+                    if company in df["会社名"].values:
+                        status_text.info(f"⏭️ {company} は既にデータベースに存在します。スキップします。")
+                    else:
+                        status_text.info(f"🤖 AIが『{company}』を調査中... ({major} > {sub})")
+                        # AIリサーチ実行
+                        result = research_with_groq(company, major, sub)
+                        new_rows.append(result)
+                        time.sleep(0.5)
+                    
+                    progress_bar.progress((i + 1) / total_items)
+
+                # 結果を保存
+                if new_rows:
+                    new_df = pd.DataFrame(new_rows)
+                    df = pd.concat([df, new_df], ignore_index=True)
+                    df.to_csv(DB_FILE, index=False)
+                    st.success(f"✅ {len(new_rows)}件のリサーチが完了しました！")
+                    
+                    # リストを空にする
+                    st.session_state.research_queue = []
+                    st.rerun() # 画面更新
+                else:
+                    st.info("新規データはありませんでした。")
+                    st.session_state.research_queue = []
+                    st.rerun()
 
         st.divider()
         
-        st.subheader("📚 現在蓄積されているデータベース")
+        # --- 既存データ ---
+        st.subheader("📚 蓄積されたデータベース")
         col_reset, col_dummy = st.columns([1, 3])
         with col_reset:
             is_reset = st.checkbox("⚠️ データを全消去する")
@@ -181,15 +239,33 @@ def main():
 
     with tab2:
         st.header("📊 比較表の生成")
-        category_filter = st.selectbox("表示するカテゴリ", ["全て"] + CATEGORY_OPTIONS)
         
-        if category_filter == "全て":
-            target_df = df
-        else:
-            target_df = df[df["カテゴリ(入力)"] == category_filter]
+        # フィルタリング機能の強化（大項目・中項目で絞り込み）
+        filter_col1, filter_col2 = st.columns(2)
+        with filter_col1:
+            # ユニークな大項目を取得
+            available_majors = ["全て"] + list(df["大項目"].unique()) if "大項目" in df.columns else ["全て"]
+            filter_major = st.selectbox("大項目で絞り込み", available_majors)
+            
+        with filter_col2:
+            # 選ばれた大項目に含まれる中項目だけを表示
+            if filter_major == "全て":
+                available_subs = ["全て"] + list(df["カテゴリ(詳細)"].unique()) if "カテゴリ(詳細)" in df.columns else ["全て"]
+            else:
+                subset = df[df["大項目"] == filter_major]
+                available_subs = ["全て"] + list(subset["カテゴリ(詳細)"].unique())
+            
+            filter_sub = st.selectbox("中項目で絞り込み", available_subs)
+
+        # データの抽出
+        target_df = df.copy()
+        if filter_major != "全て":
+            target_df = target_df[target_df["大項目"] == filter_major]
+        if filter_sub != "全て":
+            target_df = target_df[target_df["カテゴリ(詳細)"] == filter_sub]
 
         if not target_df.empty:
-            st.write(f"### 比較表：{category_filter}")
+            st.write(f"### 比較表：{len(target_df)}社")
             comparison_table = target_df.set_index("会社名").transpose()
             st.dataframe(comparison_table, height=800)
 
@@ -197,11 +273,11 @@ def main():
             st.download_button(
                 label="📥 比較表をCSVでダウンロード",
                 data=csv_data,
-                file_name=f'comparison_{category_filter}.csv',
+                file_name=f'comparison_{datetime.now().strftime("%Y%m%d")}.csv',
                 mime='text/csv'
             )
         else:
-            st.warning("データがありません。フロー1で追加してください。")
+            st.warning("該当するデータがありません。")
 
 if __name__ == "__main__":
     main()
